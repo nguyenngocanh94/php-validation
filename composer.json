@@ -1,0 +1,23 @@
+{
+  "name": "ericsnguyen/validation",
+  "description": "a validation form like other language c#, java with annotations",
+  "type": "library",
+  "keywords": ["validation", "validataion AOP", "annotations like"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eric s Nguyen",
+      "email": "20120035@student.hut.edu.vn"
+    }
+  ],
+  "require": {
+    "php": "^7.4",
+    "doctrine/annotations": "^1.10",
+    "ext-json": "*",
+    "netresearch/jsonmapper": "^3.1",
+    "php-di/phpdoc-reader": "^2.2"
+  },
+  "autoload": {
+    "psr-4": { "Validation\\": "lib/Validation/" }
+  }
+}
