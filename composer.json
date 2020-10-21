@@ -1,5 +1,5 @@
 {
-  "name": "ericsnguyen/validation",
+  "name": "ericsnguyen/php-validation",
   "description": "a validation form like other language c#, java with annotations",
   "type": "library",
   "keywords": ["validation", "validataion AOP", "annotations like"],
