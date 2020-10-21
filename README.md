@@ -1,6 +1,7 @@
 # PHP validation
-a validation form like other language c#, java with annotations
-in some other language like c# and java we have `Attribute` a.k.a `Annotation`
+This is a validation form in JAVA. we mark the field with an `Annotation` to constraint it.
+
+In some other language like c# and java we use `Attribute` a.k.a `Annotation` to mark the field.
 ```java
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
@@ -28,11 +29,61 @@ public class User {
     @Email(message = "Email should be valid")
     private String email;
 ```
-And it is very elegant, short and beautiful. i do a version of it on PHP.
+It is very elegant, short and beautiful. I do a version of it on PHP.
 ### Prerequisites
-Your web application should use a DI library to manage all object. it will native support without adding any code, 
-just define the setting datetime for it.
+Your web application should use a DI library to manage all object. (Eg: Laravel Framework...) it will native support without adding any code, 
+just define the setting datetime for it. 
 
+## USAGE
+### step 1: setting the datetime format.
+```php
+ \Validation\Configuration::setting([
+            'date_format'=>'Y-m-d',
+        ]);
+```
+### step 2: define form class.
+```php
+class HiRequest extends \Validation\BaseRequest{
+    /**
+    * @\Validation\Annotations\NotNull
+    * @\Validation\Annotations\MaxLength(max=256)
+    */
+    public string $name;
+
+    /**
+    * @\Validation\Annotations\Range(min=18, max=50)
+    */
+    public int $age;
+}
+```
+That is OK!!
+### We support some validation:
+- NotNull
+- Min
+- Max
+- Email
+- Match
+- MinLength
+- MaxLength
+- Range
+- Length
+
+You can create your own constraint annotation by implement `IValidator` interface
+```php
+Class YourCustomConstraint extends \Doctrine\Common\Annotations\Annotation implements \Validation\Interfaces\IValidator {     
+    
+    public function check($value) : bool{
+        // predicate code
+        return true;
+    }
+    
+    public function getMessage() : string{
+       return "what message you want!!!";
+    }
+}
+```
+
+### For old style.
 If you don't use DI library, at the block code that resolve controller instance. you must resolve it like below.
 - i assume your controller is `HelloController`
 ```php
@@ -93,51 +144,5 @@ class HelloController{
     }
 }
 ```
-## USAGE
-### step 1: setting the datetime format.
-```php
- \Validation\Configuration::setting([
-            'date_format'=>'Y-m-d',
-        ]);
-```
-### step 2: define form class.
-```php
-class HiRequest extends \Validation\BaseRequest{
-    /**
-    * @\Validation\Annotations\NotNull
-    * @\Validation\Annotations\MaxLength(max=256)
-    */
-    public string $name;
 
-    /**
-    * @\Validation\Annotations\Range(min=18, max=50)
-    */
-    public int $age;
-}
-```
-That is OK!!
-### We support some validation:
-- NotNull
-- Min
-- Max
-- Email
-- Match
-- MinLength
-- MaxLength
-- Range
-- Length
-You can create your own constraint annotation by implement `IValidator` interface
-```php
-Class YourCustomConstraint extends \Doctrine\Common\Annotations\Annotation implements \Validation\Interfaces\IValidator {     
-    
-    public function check($value) : bool{
-        // predicate code
-        return true;
-    }
-    
-    public function getMessage() : string{
-       return "what message you want!!!";
-    }
-}
-```
 * [How to contribute - any contribution is welcome!!]()
