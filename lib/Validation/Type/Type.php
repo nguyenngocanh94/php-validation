@@ -73,6 +73,9 @@ class Type
         return $this->nullable;
     }
 
+    public function isArray(): bool{
+        return $this->type == 'array';
+    }
 
     /**
      * @return mixed

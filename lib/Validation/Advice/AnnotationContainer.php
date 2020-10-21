@@ -6,8 +6,10 @@ namespace Validation\Advice;
 
 
 use Doctrine\Common\Annotations\Annotation;
+use ReflectionProperty;
 use Validation\Exceptions\ValidationException;
 use Validation\Type\Type;
+use Validation\Type\TypeReader;
 
 /**
  * Class AnnotationContainer of a field
@@ -15,6 +17,8 @@ use Validation\Type\Type;
  */
 class AnnotationContainer
 {
+    public ReflectionProperty $property;
+
     public string $fieldName;
     /**
      * @var Annotation[]
@@ -28,12 +32,21 @@ class AnnotationContainer
      */
     public array $annotationContainers;
 
-    public function __construct(string $fieldName, array $annotations, Type $strongType, $annotationContainers = [])
+    /**
+     * AnnotationContainer constructor.
+     * @param string $fieldName
+     * @param array $annotations
+     * @param Type $strongType
+     * @param ReflectionProperty $property
+     * @throws \ReflectionException
+     */
+    public function __construct(string $fieldName, array $annotations, Type $strongType, ReflectionProperty $property)
     {
         $this->fieldName = $fieldName;
         $this->annotations = $annotations;
         $this->strongType = $strongType;
-        $this->annotationContainers = $annotationContainers;
+        $this->property = $property;
+        $this->getChildAnnotationContainer();
     }
 
     /**
@@ -54,4 +67,23 @@ class AnnotationContainer
             $annotationContainer->validate($annotationContainer->fieldName, $valueOfProperty[$annotationContainer->fieldName]);
         }
     }
+
+
+    /**
+     * @throws \ReflectionException
+     */
+    private function getChildAnnotationContainer(){
+        $this->annotationContainers = ValidationAdvice::getAnnotationContainers($this->getFullNameSpaceType());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFullNameSpaceType(){
+        $parser = new TypeReader();
+        [$type, ] = $parser->readPropertyType($this->property);
+
+        return $type;
+    }
+
 }

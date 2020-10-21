@@ -6,16 +6,14 @@ namespace Validation\Advice;
 
 
 use ReflectionClass;
-use ReflectionProperty;
 use Validation\BaseRequest;
 use Validation\Common\StringUtils;
 use Validation\Configuration;
+use Validation\Exceptions\ValidatedClassNeedNonConstructorException;
 use Validation\Exceptions\ValidationException;
 use Validation\Http\Request;
-use Validation\Type\Parser;
 use Validation\Type\StrongType;
 use Validation\Type\Type;
-use Validation\Type\TypeReader;
 
 class ValidationAdvice
 {
@@ -25,11 +23,11 @@ class ValidationAdvice
      * @throws ValidationException
      * @throws \JsonMapper_Exception
      * @throws \ReflectionException
-     * @throws \Validation\Exceptions\ValidatedClassNeedNonConstructorException
+     * @throws ValidatedClassNeedNonConstructorException
      */
     public function advice(BaseRequest $instance){
         $validateStack = [];
-        $annotationContainers = $this->getAnnotationContainers($instance);
+        $annotationContainers = self::getAnnotationContainers($instance);
         $request = Request::init();
         foreach ($annotationContainers as $annotationContainer){
             $fieldName = $annotationContainer->fieldName;
@@ -39,8 +37,8 @@ class ValidationAdvice
             // assign value
             if (Configuration::$greaterPHP74Version){
                 // auto convert to strong type.
-                if ($strongType->isBuildIn()){
-                    // build in is string, int, float, double, array
+                if ($strongType->isBuildIn() && !$strongType->isArray()){
+                    // build in is string, int, float, double
                     $valueOfProperty = StrongType::make($strongType, $valueOfProperty);
                 }
             }else{
@@ -74,7 +72,7 @@ class ValidationAdvice
      * @return AnnotationContainer[]
      * @throws \ReflectionException
      */
-    public function getAnnotationContainers($instance){
+    public static function getAnnotationContainers($instance){
         $reflect = new ReflectionClass($instance);
         $properties = $reflect->getProperties();
         $className = get_class($instance);
@@ -87,36 +85,17 @@ class ValidationAdvice
                 if (Configuration::$greaterPHP74Version){
                     // auto convert to strong type.
                     $type = $property->getType();
-                    if ($type == 'array'){
-
-                    }
                     $strongType = new Type($type->getName(), $type->isBuiltin(), $type->allowsNull());
                 }else{
                     $strongType = AnnotationReader::readStrongType($className, $propertyName);
                 }
-                $annotationContainer = [];
-                if ($strongType->isCustomClass()){
-                    $annotationContainer = $this->getAnnotationContainers($strongType->getType());
-                }
 
-                $validationContainer = new AnnotationContainer($propertyName, $annotations, $strongType, $annotationContainer);
+                $validationContainer = new AnnotationContainer($propertyName, $annotations, $strongType, $property);
                 $validationContainers[] = $validationContainer;
                 $instance->fieldList[] = $propertyName;
             }
         }
 
         return $validationContainers;
-    }
-
-
-    /**
-     * @param ReflectionProperty $property
-     * @return mixed
-     */
-    private function getDetailClassWithArrayCase(ReflectionProperty $property){
-        $parser = new TypeReader();
-        [$type, ] = $parser->readPropertyType($property);
-
-        return $type;
     }
 }
