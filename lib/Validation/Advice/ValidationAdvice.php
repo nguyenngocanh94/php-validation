@@ -82,14 +82,7 @@ class ValidationAdvice
             if ($property->class == $className){
                 $propertyName = $property->getName();
                 $annotations = AnnotationReader::fromProperty($className, $propertyName);
-                if (Configuration::$greaterPHP74Version){
-                    // auto convert to strong type.
-                    $type = $property->getType();
-                    $strongType = new Type($type->getName(), $type->isBuiltin(), $type->allowsNull());
-                }else{
-                    $strongType = AnnotationReader::readStrongType($className, $propertyName);
-                }
-
+                $strongType = StrongType::getStrongType($property);
                 $validationContainer = new AnnotationContainer($propertyName, $annotations, $strongType, $property);
                 $validationContainers[] = $validationContainer;
                 $instance->fieldList[] = $propertyName;

@@ -7,7 +7,9 @@ namespace Validation\Type;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Validation\Advice\AnnotationReader;
 use Validation\Common\StringUtils;
+use Validation\Configuration;
 
 class TypeReader
 {
@@ -37,25 +39,25 @@ class TypeReader
 
     /**
      * @param ReflectionProperty $property
-     * @return array
+     * @return array ($type, $isBuildIn, $isArray)
      */
     public function readPropertyType(ReflectionProperty $property): array
     {
         $isArray = false;
-        // Get the content of the @var annotation
+       // Get the content of the @var annotation
         $docs = $property->getDocComment();
         if (!$docs) {
-            return array(null, $isArray);
+            return array(null, false, $isArray);
         }
         if (preg_match('/@var\s+([^\s]+)/', $docs, $matches)) {
             [, $type] = $matches;
         } else {
-            return array(null, $isArray);
+            return array(null, false, $isArray);
         }
 
         // return primitive, because we dont need it.
         if (isset(self::PRIMITIVE_TYPES[$type])) {
-            return array(self::PRIMITIVE_TYPES[$type], $isArray);
+            return array(self::PRIMITIVE_TYPES[$type], true, $isArray);
         }
 
         // this must be an array
@@ -65,12 +67,12 @@ class TypeReader
         // If the class name is not fully qualified (i.e. doesn't start with a \)
         if ($type[0] !== '\\') {
             $class = $property->getDeclaringClass();
-            return array($this->tryGetFullNameSpace($type, $class), $isArray);
+            return array($this->tryGetFullNameSpace($type, $class),false, $isArray);
         }
 
         $type = is_string($type) ? ltrim($type, '\\') : null;
 
-        return array($type, $isArray);
+        return array($type, false, $isArray);
     }
 
 
@@ -93,5 +95,15 @@ class TypeReader
         }
 
         return $namespace.'\\'.$type;
+    }
+
+    /**
+     * @param ReflectionProperty $property
+     * @return mixed
+     */
+    public function getFullNameSpaceType(\ReflectionProperty $property){
+        [$type, ] = $this->readPropertyType($property);
+
+        return $type;
     }
 }

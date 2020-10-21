@@ -4,12 +4,11 @@ declare(strict_type=1);
 
 namespace Validation\Type;
 
+use ReflectionProperty;
 use Validation\Configuration;
 
 /**
- * for PHP < 7.4
  * Class StrongType
- * @deprecated for version less than PHP 7.4
  * @package Validation\Type
  */
 class StrongType
@@ -20,6 +19,7 @@ class StrongType
     const String = "string";
     const DateTime = 'Datetime';
     const Array = 'array';
+    const Mixed = 'mixed';
 
     public static function belong($type){
         return $type==self::Float||$type==self::String||$type==self::DateTime||$type==self::Double||$type==self::Int;
@@ -55,5 +55,29 @@ class StrongType
             default:
                 return $value;
         }
+    }
+
+    /**
+     * get the strong type of a property
+     * @param ReflectionProperty $property
+     * @return Type
+     */
+    public static function getStrongType(ReflectionProperty $property) : Type{
+        if (Configuration::$greaterPHP74Version){
+            // auto convert to strong type.
+            $type = $property->getType();
+            if ($type=='array'){
+                $typeReader = new TypeReader();
+                $fullNameType = $typeReader->getFullNameSpaceType($property);
+                if ($fullNameType==null){
+                    return new Type(self::Mixed, false, true, true);
+                }
+                return new Type($fullNameType,false, true, true);
+            }
+            return new Type($type->getName(), $type->isBuiltin(), false, $type->allowsNull());
+        }
+        $typeReader = new TypeReader();
+        [$type, $isBuildIn, $isArray] = $typeReader->readPropertyType($property);
+        return new Type($type,$isBuildIn, $isArray, true);
     }
 }

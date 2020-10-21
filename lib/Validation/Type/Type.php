@@ -13,16 +13,18 @@ class Type
     protected string $type;
     protected bool $nullable;
     protected bool $buildIn;
+    protected bool $isArray;
     /**
      * @var mixed
      */
     protected $default = null;
 
 
-    function __construct(string $type, bool $buildIn = false, bool $nullable = false){
+    function __construct(string $type, bool $buildIn = false, bool $isArray = false, bool $nullable = false){
         $this->type = $type;
         $this->nullable = $nullable;
         $this->buildIn = $buildIn;
+        $this->isArray = $isArray;
         $this->setDefault();
     }
 
@@ -31,6 +33,10 @@ class Type
         if ($this->buildIn && !$this->nullable){
             if ($this->type == 'int' || $this->type == 'float' || $this->type == 'double'){
                 $this->default = 0;
+                return;
+            }
+            if ($this->type == 'bool' || $this->type == 'boolean'){
+                $this->default = false;
                 return;
             }
             if ($this->type == 'string'){
@@ -78,11 +84,11 @@ class Type
     }
 
     /**
-     * @return mixed
+     * @return object
      * @throws ValidatedClassNeedNonConstructorException
      * @throws \ReflectionException
      */
-    public function getInstanceOfType(){
+    public function getInstanceOfType() : object{
         $clazz = $this->type;
         $reflection = new ReflectionClass($clazz);
         $constructor = $reflection->getConstructor();
@@ -93,7 +99,7 @@ class Type
         }
     }
 
-    public function isCustomClass(){
+    public function isCustomClass() : bool{
         if ($this->isBuildIn()){
             return false;
         }
