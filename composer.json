@@ -14,8 +14,7 @@
     "php": "^7.4",
     "doctrine/annotations": "^1.10",
     "ext-json": "*",
-    "netresearch/jsonmapper": "^3.1",
-    "php-di/phpdoc-reader": "^2.2"
+    "netresearch/jsonmapper": "^3.1"
   },
   "autoload": {
     "psr-4": { "Validation\\": "lib/Validation/" }
