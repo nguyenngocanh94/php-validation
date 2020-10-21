@@ -57,11 +57,11 @@ class StringUtils
      * into camel case (e.g. first_name -> firstName)
      *
      * @param string $snake String in underscore format
-     * @param bool $capitalise_first_char If true, capitalise the first char in $str
+     * @param bool $capitaliseFirstChar If true, capitalise the first char in $str
      * @return string $str translated into camel caps
      */
-    public static function snakeToCamel(string $snake,bool $capitalise_first_char = false){
-        if($capitalise_first_char) {
+    public static function snakeToCamel(string $snake,bool $capitaliseFirstChar = false){
+        if($capitaliseFirstChar) {
             $str[0] = strtoupper($snake[0]);
         }
         $func = create_function('$c', 'return strtoupper($c[1]);');

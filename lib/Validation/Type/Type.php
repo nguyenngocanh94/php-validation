@@ -6,6 +6,7 @@ namespace Validation\Type;
 
 
 use ReflectionClass;
+use Validation\Common\StringUtils;
 use Validation\Exceptions\ValidatedClassNeedNonConstructorException;
 
 class Type
@@ -51,6 +52,9 @@ class Type
         if ($this->nullable){
             $this->default = null;
         }
+        if ($this->isArray){
+            $this->default = [];
+        }
     }
 
 
@@ -80,7 +84,7 @@ class Type
     }
 
     public function isArray(): bool{
-        return $this->type == 'array';
+        return $this->isArray;
     }
 
     /**
@@ -102,6 +106,9 @@ class Type
     public function isCustomClass() : bool{
         if ($this->isBuildIn()){
             return false;
+        }
+        if (StringUtils::startWith($this->type, '\\')){
+            return true;
         }
         if ($this->type != 'Datetime'){
             return true;

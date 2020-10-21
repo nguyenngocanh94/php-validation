@@ -12,16 +12,16 @@ class BaseRequest
     /**
      * @var string[]
      */
-    public $fieldList;
+    public array $__fieldList;
     public function __construct()
     {
         $validate = new ValidationAdvice();
         $validate->advice($this);
     }
 
-    public function toArray(){
+    public function toArray() : array{
         $res = [];
-        foreach ($this->fieldList as $property){
+        foreach ($this->__fieldList as $property){
             $res[$property]=$this->$property;
         }
 

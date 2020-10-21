@@ -44,7 +44,7 @@ class TypeReader
     public function readPropertyType(ReflectionProperty $property): array
     {
         $isArray = false;
-       // Get the content of the @var annotation
+        // Get the content of the @var annotation
         $docs = $property->getDocComment();
         if (!$docs) {
             return array(null, false, $isArray);
@@ -62,6 +62,7 @@ class TypeReader
 
         // this must be an array
         if (StringUtils::endWith($type, '[]')) {
+            $type = substr($type, 0, strlen($type) - 2);
             $isArray = true;
         }
         // If the class name is not fully qualified (i.e. doesn't start with a \)
@@ -94,7 +95,7 @@ class TypeReader
             }
         }
 
-        return $namespace.'\\'.$type;
+        return $namespace.$type;
     }
 
     /**
@@ -104,6 +105,6 @@ class TypeReader
     public function getFullNameSpaceType(\ReflectionProperty $property){
         [$type, ] = $this->readPropertyType($property);
 
-        return $type;
+        return '\\'.$type;
     }
 }

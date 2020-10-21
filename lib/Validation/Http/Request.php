@@ -18,8 +18,8 @@ class Request
     }
 
     private function __construct(){
-        if ($_SERVER['CONTENT_TYPE'] = 'application/json'){
-            $this->_request = json_decode( file_get_contents('php://input'), 1);
+        if ($_SERVER['HTTP_CONTENT_TYPE'] == 'application/json'){
+            $this->_request = json_decode( file_get_contents('php://input'), 1)??[];
         }else{
             $this->_request = $_REQUEST;
         }

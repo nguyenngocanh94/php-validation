@@ -13,7 +13,6 @@ use Validation\Exceptions\ValidatedClassNeedNonConstructorException;
 use Validation\Exceptions\ValidationException;
 use Validation\Http\Request;
 use Validation\Type\StrongType;
-use Validation\Type\Type;
 
 class ValidationAdvice
 {
@@ -34,6 +33,7 @@ class ValidationAdvice
             $strongType = $annotationContainer->strongType;
             // convention must be camel <=> snake
             $valueOfProperty = $request->get(StringUtils::camelToSnake($fieldName));
+
             // assign value
             if (Configuration::$greaterPHP74Version){
                 // auto convert to strong type.
@@ -46,25 +46,15 @@ class ValidationAdvice
                 $valueOfProperty = StrongType::make($strongType, $valueOfProperty);
             }
             try {
-                $annotationContainer->validate($fieldName, $valueOfProperty);
+                $annotationContainer->validate($instance, $fieldName, $valueOfProperty);
             }catch (ValidationException $exception){
                 $validateStack[$fieldName][] = $exception->getMessage();
-            }
-            if (count($validateStack[$fieldName])>0){
-                if ($strongType->isCustomClass()){
-                    $instance->$fieldName = Configuration::$jsonMapper->map($valueOfProperty, $strongType->getInstanceOfType());
-                }elseif ($strongType->getType()=='array'){
-
-                    $instance->$fieldName = Configuration::$jsonMapper->mapArray($valueOfProperty, [], );
-                }
-                else{
-                    $instance->$fieldName = $valueOfProperty;
-                }
             }
         }
         if (count($validateStack) > 0){
             throw new ValidationException(json_encode($validateStack));
         }
+        return $instance;
     }
 
     /**
@@ -75,12 +65,16 @@ class ValidationAdvice
     public static function getAnnotationContainers($instance){
         $reflect = new ReflectionClass($instance);
         $properties = $reflect->getProperties();
-        $className = get_class($instance);
+        if (is_object($instance)){
+            $className = get_class($instance);
+        }else{
+            $className = $instance;
+        }
         $instance->fieldList = [];
         $validationContainers = array();
         foreach ($properties as $property) {
-            if ($property->class == $className){
-                $propertyName = $property->getName();
+            $propertyName = $property->getName();
+            if ($propertyName!='__fieldList'){
                 $annotations = AnnotationReader::fromProperty($className, $propertyName);
                 $strongType = StrongType::getStrongType($property);
                 $validationContainer = new AnnotationContainer($propertyName, $annotations, $strongType, $property);
