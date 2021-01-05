@@ -93,7 +93,8 @@ class HelloController{
     }
 }
 ```
-- your `HiRequest`
+- At `HiRequest`
+
 ```php
 class HiRequest extends \Validation\BaseRequest{
     /**
@@ -104,6 +105,7 @@ class HiRequest extends \Validation\BaseRequest{
     ...
 }
 ```
+
 - let say it is your code that resolve the controller and method that handle the request `hello/sayHi`.
 ```php
 $controller = new HelloController();
